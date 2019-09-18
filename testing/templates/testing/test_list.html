@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block body_block %}
+    <div class="jumbotron">
+        <dl>{{ departament.description_open }}</dl>
+        <dl class="lead">Список тестов:</dl>
+        <hr/>
+        {% if user.is_authenticated == False %}
+            {% for test in departament.tests.all %}
+                {% if test.logged == False %}
+                    {% if test.questions.all|length > 0 %}
+                        <h2 class="lead">
+                            <ul>
+                                <li>
+                                    <a href="{% url 'testing:test_base' pk=test.id %}">{{ test.name }}</a>
+                                </li>
+                            </ul>
+                        </h2>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+{% endblock %}

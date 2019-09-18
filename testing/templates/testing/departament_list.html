@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load poll_extras %}
+{% block body_block %}
+
+<div class="jumbotron">
+
+<h3 class="display-4">Отделы:</h3>
+    {% for dep in departament %}
+        <h2 class="lead">
+            <ul>
+                <li>
+                    <a href="{% url 'testing:test_list' pk=dep.id %}"> {{ dep.name }}</a>
+                    {% if dep.tests.all|count_of_true_param:"logged" > 0 %}
+                        <a href="{% url 'testing:login' pk=dep.id %}"> (Закрытая часть)</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </h2>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

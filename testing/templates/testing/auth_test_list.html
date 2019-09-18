@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load poll_extras %}
+
+{% block body_block %}
+    <div class="jumbotron">
+        <p>Здравствуйте: {{ user.username }}</p>
+        <dl>{{ departament.description_close }}</dl>
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+        <hr/>
+        {% if user.is_authenticated %}
+            {% for test in departament.tests.all %}
+                {% if test.logged %}
+                    {% if test.questions.all|length > 0 %}
+                        <h2 class="lead" data-toggle="tooltip" data-placement="top" title="{{ test.description }}">
+
+                            <ul>
+                                <li>
+                                    {% if test|is_finished:user %}
+                                        <a href="{% url 'testing:test_base' pk=test.id %}">{{ test.name }} (Время на выполнение: {{ test.time }} минут)</a>
+                                    {% endif %}
+                                    {% if not test|is_finished:user %}
+                                        <p href="{% url 'testing:test_base' pk=test.id %}">{{ test.name }} (Завершен)</p>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </h2>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

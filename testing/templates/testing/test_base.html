@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load poll_extras %}
+
+{% block body_block %}
+    <form method="POST" id="testform" action="javascript:void(null);">
+        {% csrf_token %}
+        <div class="jumbotron" id="progress-screen">
+            {% for question in test.questions.all|shuffle %}
+                {% if question.answers.all|count_of_true_param:"correct" > 0 %}
+                    <div id="{{ forloop.counter0 }}">
+                        <dl class="lead">{{ question.text }}</dl>
+                        {% if question.image %}
+                            <img src="{{ question.image.url }}" class="img-rounded center-block" alt="image">
+                        {% endif %}
+                        <input type="hidden" value="{{question.id}}" name="question_id">
+                        <hr/>
+                            {% if question.answers.all|count_of_true_param:"correct" == 1 %}
+                                {% for answer in question.answers.all|shuffle %}
+                                    <p><input class="radio" name="{{ question.id }}" type="radio" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
+                                {% endfor %}
+                            {% else %}
+                                {% for answer in question.answers.all|shuffle %}
+                                    <p><input class="check" name="{{ question.id }}" type="checkbox" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
+                                {% endfor %}
+                                <p align="right">Количество ответов: не более <em class="count">{{ question.answers.all|count_of_true_param:"correct" }}</em></p>
+                            {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div>
+                <div class="btn-group btn-group-lg">
+                    <button id="back" onclick="clk('back')" type="button" class="btn btn-primary"><-Предыдущий</button>
+                    <button id="next" onclick="clk('next')" type="button" class="btn btn-primary">Следующий-></button>
+                    <button id="finish" onclick="clk('finish')" type="submit" class="btn btn-primary">Завершить тест</button>
+                </div>
+                <div class="text-right">
+                    <p>Осталось: <em id="min"></em>:<em id="sec"></em></p>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <script>
+        let questions = $("#progress-screen").children().length - 2;
+        for (let i = 1; i <= questions; i++){
+            $("#"+i).hide();
+        };
+        $("#back").prop('disabled', true);
+
+
+        function isVisible(el){
+            let element = $(el);
+            return ((element.css('display') !== 'none') && (element.css('visibility') !== 'hidden') && (element.css('opacity') !== 0));
+        }
+
+        function check(el){
+            let score_parent = $(el).find(".count");
+            let count = 0;
+            let score = score_parent.text();
+            if (score !== ''){
+                $(el).find(".check").each(function() {
+                    if (this.checked === true) {
+                        count = count + 1;
+                    }
+                });
+                if (count > score){
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function clk(nav){
+            for (let k = 0; k <= questions; k++){
+                if (isVisible("#"+k)){
+                    if (check("#"+k) === true) {
+                        if (nav === 'finish') {
+                            done();
+                        }
+                        if (nav === 'next') {
+                            if (k < questions) {
+                                $("#" + k).hide();
+                                $("#" + (k + 1)).show();
+                                if (k === 0) {
+                                    $("#back").prop('disabled', false);
+                                }
+                                if ((k + 1) === questions) {
+                                    $("#next").prop('disabled', true);
+                                }
+                            }
+                        }
+                        if (nav === 'back') {
+                            if (k > 0) {
+                                $("#" + k).hide();
+                                $("#" + (k - 1)).show();
+                            }
+                            if (k === questions) {
+                                $("#next").prop('disabled', false);
+                            }
+                            if ((k - 1) === 0) {
+                                $("#back").prop('disabled', true);
+                            }
+                        }
+                        break;
+                    };
+                };
+            };
+        };
+
+        let finnaly = false;
+
+        function done()
+        {
+            finnaly = true;
+            let msg = $('#testform').serialize();
+            $.ajax({
+                type: 'POST',
+                url: document.location.href,
+                data: msg,
+                success: function(data) {
+                    alert(data);
+                    document.location.replace("{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}");
+                },
+                error:  function(xhr, str){
+                    alert('Возникла ошибка: ' + xhr.responseCode);
+                }
+            });
+        };
+
+        let timer; // пока пустая переменная
+        let min = {{ test.time }}; // стартовое значение обратного отсчета
+        let sec = 0;
+        countdown(); // вызов функции
+        function countdown(){  // функция обратного отсчета
+            $('#min').text(min);
+            $('#sec').text(sec);
+            if (min > 0){
+                if (sec === 0){
+                    min--;
+                    sec = 59;
+                }
+                else{
+                    sec--;
+                }
+                timer = setTimeout(countdown, 1000);
+            }
+            else{
+                if (sec === 0){
+                    clearTimeout(timer); // таймер остановится на нуле
+                    done();
+                }
+                else{
+                    sec--;
+                    timer = setTimeout(countdown, 1000);
+                }
+            }
+        }
+
+        (function (global) {
+            if(typeof (global) === "undefined") {
+                throw new Error("window is undefined");
+            }
+
+            var _hash = "!";
+            var noBackPlease = function () {
+                global.location.href += "#";
+
+                // making sure we have the fruit available for juice (^__^)
+                global.setTimeout(function () {
+                    global.location.href += "!";
+                }, 50);
+            };
+
+            global.onhashchange = function () {
+                if (global.location.hash !== _hash) {
+                    global.location.hash = _hash;
+                }
+            };
+
+            global.onload = function () {
+                if (finnaly === false){
+                    noBackPlease();
+
+                    // disables backspace on page except on input fields and textarea..
+                    document.body.onkeydown = function (e) {
+                        var elm = e.target.nodeName.toLowerCase();
+                        if (e.which === 8 && (elm !== 'input' && elm  !== 'textarea')) {
+                            e.preventDefault();
+                        }
+                        // stopping event bubbling up the DOM tree..
+                        e.stopPropagation();
+                    };
+                }
+            }
+
+        })(window);
+
+    </script>
+{% endblock %}
