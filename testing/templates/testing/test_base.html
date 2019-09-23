@@ -4,29 +4,31 @@
 {% block body_block %}
     <form method="POST" id="testform" action="javascript:void(null);">
         {% csrf_token %}
-        <div class="jumbotron" id="progress-screen">
-            {% for question in test.questions.all|shuffle %}
-                {% if question.answers.all|count_of_true_param:"correct" > 0 %}
-                    <div id="{{ forloop.counter0 }}">
-                        <dl class="lead">{{ question.text }}</dl>
-                        {% if question.image %}
-                            <img src="{{ question.image.url }}" class="img-rounded center-block" alt="image">
-                        {% endif %}
-                        <input type="hidden" value="{{question.id}}" name="question_id">
-                        <hr/>
-                            {% if question.answers.all|count_of_true_param:"correct" == 1 %}
-                                {% for answer in question.answers.all|shuffle %}
-                                    <p><input class="radio" name="{{ question.id }}" type="radio" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
-                                {% endfor %}
-                            {% else %}
-                                {% for answer in question.answers.all|shuffle %}
-                                    <p><input class="check" name="{{ question.id }}" type="checkbox" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
-                                {% endfor %}
-                                <p align="right">Количество ответов: не более <em class="count">{{ question.answers.all|count_of_true_param:"correct" }}</em></p>
+        <div class="jumbotron">
+            <div id="progress-screen">
+                {% for question in test.questions.all|shuffle %}
+                    {% if question.answers.all|count_of_true_param:"correct" > 0 %}
+                        <div id="{{ forloop.counter0 }}">
+                            <dl class="lead">{{ question.text }}</dl>
+                            {% if question.image %}
+                                <img src="{{ question.image.url }}" class="img-rounded center-block" alt="image">
                             {% endif %}
-                    </div>
-                {% endif %}
-            {% endfor %}
+                            <input type="hidden" value="{{question.id}}" name="question_id">
+                            <hr/>
+                                {% if question.answers.all|count_of_true_param:"correct" == 1 %}
+                                    {% for answer in question.answers.all|shuffle %}
+                                        <p><input class="radio" name="{{ question.id }}" type="radio" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for answer in question.answers.all|shuffle %}
+                                        <p><input class="check" name="{{ question.id }}" type="checkbox" value="{{ answer.id }}">&nbsp;{{ answer.text }}</p>
+                                    {% endfor %}
+                                    <p align="right">Количество ответов: не более <em class="count">{{ question.answers.all|count_of_true_param:"correct" }}</em></p>
+                                {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
             <div>
                 <div class="btn-group btn-group-lg">
                     <button id="back" onclick="clk('back')" type="button" class="btn btn-primary"><-Предыдущий</button>
@@ -42,7 +44,7 @@
 
 
     <script>
-        let questions = $("#progress-screen").children().length - 2;
+        let questions = $("#progress-screen").children().length-1;
         for (let i = 1; i <= questions; i++){
             $("#"+i).hide();
         };
