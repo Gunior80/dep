@@ -153,7 +153,7 @@ class FileSizeChecker(MaxValueValidator):
         # get the file size as cleaned value
         cleaned = self.clean(value.size)
         params = {'limit_value': self.limit_value, 'show_value': cleaned, 'value': value}
-        if self.compare(cleaned, self.limit_value * 1024 * 1024): # convert limit_value from MB to Bytes
+        if self.compare(cleaned, self.limit_value * 1024 * 1024):  # convert limit_value from MB to Bytes
             raise ValidationError(self.message, code=self.code, params=params)
 
 

@@ -24,7 +24,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
 class DepartamentAdmin(BaseAdminModel):
     list_display = ['name', ]
-
+    fields = ('name',('description_open', 'description_close'), )
     # Выводит список отделов,
     # в которых состоит данный администратор
     def get_queryset(self, request):
@@ -50,17 +50,17 @@ test_admin.register(Departament, DepartamentAdmin)
 class AnswerInLine(nested_admin.NestedStackedInline):
     model = Answer
     extra = 0
-    min = 2
+    min_num = 2
 
 
 class QuestionInLine(nested_admin.NestedStackedInline):
     model = Question
     extra = 0
-    min = 2
+    min_num = 2
     inlines = [
         AnswerInLine
     ]
-    fields = ['text', 'image', 'icon', 'score', ]
+    fields = ('text', ('image', 'icon'), 'score', )
     readonly_fields = ['icon', ]
 
 
