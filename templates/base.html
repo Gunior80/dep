@@ -7,27 +7,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/testing.css' %}" />
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.jpg' %}"/>
     <title>Система тестирования</title>
 </head>
 <body>
-<!--
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <ul class="navbar-nav mr-auto">
-        <li><a class="btn btn-dark btn-lg" role="button" href="{% url 'testing:index' %}">Домашняя страница</a></li>
-    </ul>
-      <ul class="nav navbar-right">
-          <li><a class="btn btn-dark btn-lg" role="button" href="{% url 'admin:index' %}">Админ</a></li>
-      </ul>
-  </nav>
--->
-  <div class="container">
-  {% block body_block %}
-
-  {% endblock %}
+  <div class="container ">
+      <div class="jumbotron">
+          <form>
+              {% for message in messages %}
+                  <div class="message {{ message.tags }}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+          </form>
+      {% block body_block %}{% endblock %}
+      </div>
   </div>
 </body>
 </html>

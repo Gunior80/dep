@@ -60,6 +60,8 @@ class QuestionInLine(nested_admin.NestedStackedInline):
     inlines = [
         AnswerInLine
     ]
+    fields = ['text', 'image', 'icon', 'score',]
+    readonly_fields = ['icon',]
 
 
 class TestAdmin(BaseNestedModel):

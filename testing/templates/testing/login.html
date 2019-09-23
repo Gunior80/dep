@@ -1,17 +1,12 @@
 {% extends 'base.html' %}
 
 {% block body_block %}
-    <div class="jumbotron text-center mb-4">
+    <div class="text-center mb-4">
         <form id="Enterform" action="{% url 'testing:login' pk=departament.id %}" method="post">
             <label for="login">Введите ФИО</label>
             <input type="login" name="username" class="form-control" id="login" placeholder="Введите полное имя" required>
             {% csrf_token %}
             <button type="submit" class="btn btn-primary">Войти</button>
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">
-                {{ message }}
-            </div>
-            {% endfor %}
         </form>
     </div>
 {% endblock %}

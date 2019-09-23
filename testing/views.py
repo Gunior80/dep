@@ -76,15 +76,19 @@ class TestBaseView(DetailView):
     template_name = 'testing/test_base.html'
 
     def get(self, request, *args, **kwargs):
+        test_id = kwargs['pk']
+        test = models.Test.objects.all().filter(id=test_id).first()
         if request.user.is_authenticated:
-            test_id = kwargs['pk']
-            test = models.Test.objects.all().filter(id=test_id).first()
             if models.Result.objects.filter(user=request.user, test=test_id).first() is None:
                 result = models.Result(user=request.user, test=test)
                 result.save()
             else:
                 messages.error(request, 'Вы уже прошли задание - %s' % test.name)
                 return redirect(reverse('testing:auth_test_list', kwargs=kwargs))
+        else:
+            if test.logged is True:
+                messages.error(request, 'Вы не можете решать тестовые задания без авторизации')
+                return redirect(reverse('testing:test_list', kwargs=kwargs))
         return super().get(self, request, *args, **kwargs)
 
     def post(self, request, **kwargs):
