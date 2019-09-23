@@ -23,7 +23,7 @@ class BaseAdminModel(admin.ModelAdmin):
 
 
 class DepartamentAdmin(BaseAdminModel):
-    list_display = ['name',]
+    list_display = ['name', ]
 
     # Выводит список отделов,
     # в которых состоит данный администратор
@@ -60,8 +60,8 @@ class QuestionInLine(nested_admin.NestedStackedInline):
     inlines = [
         AnswerInLine
     ]
-    fields = ['text', 'image', 'icon', 'score',]
-    readonly_fields = ['icon',]
+    fields = ['text', 'image', 'icon', 'score', ]
+    readonly_fields = ['icon', ]
 
 
 class TestAdmin(BaseNestedModel):
