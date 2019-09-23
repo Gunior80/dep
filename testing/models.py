@@ -1,5 +1,7 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
@@ -8,6 +10,8 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import Permission
+
+from dep import settings
 
 
 class Departament(models.Model):
@@ -142,9 +146,22 @@ class TestResult(Test):
         proxy = True
 
 
+class FileSizeChecker(MaxValueValidator):
+    message = _('Размер файла не должен превышать %(limit_value)s MB.')
+
+    def __call__(self, value):
+        # get the file size as cleaned value
+        cleaned = self.clean(value.size)
+        params = {'limit_value': self.limit_value, 'show_value': cleaned, 'value': value}
+        if self.compare(cleaned, self.limit_value * 1024 * 1024): # convert limit_value from MB to Bytes
+            raise ValidationError(self.message, code=self.code, params=params)
+
+
 class Question(models.Model):
     text = models.TextField(verbose_name="Вопрос",)
-    image = models.ImageField(upload_to='images', blank=True, verbose_name="Изображение")
+    image = models.ImageField(upload_to='images', blank=True, verbose_name="Изображение",
+                              validators=[FileSizeChecker(settings.MAX_IMAGE_SIZE)],
+                              help_text=_('Максимальный размер изображения %d MB' % settings.MAX_IMAGE_SIZE))
     score = models.PositiveIntegerField(default="1", verbose_name="Количестово баллов за полный ответ")
     test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE, verbose_name="Название теста",)
 
