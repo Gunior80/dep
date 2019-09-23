@@ -143,7 +143,7 @@ class TestResult(Test):
 
 class Question(models.Model):
     text = models.TextField(verbose_name="Вопрос",)
-    image = models.ImageField(upload_to='./', blank=True)
+    image = models.ImageField(upload_to='', blank=True)
     score = models.PositiveIntegerField(default="1", verbose_name="Количестово баллов")
     test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE, verbose_name="Название теста",)
 
