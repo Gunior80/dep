@@ -176,7 +176,6 @@ class Question(models.Model):
     def save(self, *args, **kwargs):
         if self.pk is not None:
             old_self = Question.objects.get(pk=self.pk)
-            print(old_self.image.name)
             if old_self.image and self.image != old_self.image:
                 old_self.image.delete(False)
         return super(Question, self).save(*args, **kwargs)

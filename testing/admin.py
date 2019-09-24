@@ -169,7 +169,7 @@ class ResultInLine(admin.TabularInline):
         delta = obj.end_test_date - obj.start_test_date
         minutes = (delta.seconds % 3600) // 60
         seconds = (delta.seconds % 60)
-        return '%d мин. %d сек.' % (minutes, seconds-1)
+        return '%d мин. %d сек.' % (minutes, seconds)
 
     time.short_description = "Затрачено времени"
 
