@@ -2,7 +2,7 @@
 
 
 {% block body_block %}
-    <dl>{{ departament.description_open }}</dl>
+    <dl>{{ departament.description_open|linebreaks }}</dl>
     <dl class="lead">Список тестов:</dl>
     <hr/>
     {% if user.is_authenticated == False %}

@@ -3,7 +3,7 @@
 
 {% block body_block %}
     <p>Здравствуйте: {{ user.username }}</p>
-    <dl>{{ departament.description_close }}</dl>
+    <dl>{{ departament.description_close|linebreaks }}</dl>
     <hr/>
     {% if user.is_authenticated %}
         {% for test in departament.tests.all %}

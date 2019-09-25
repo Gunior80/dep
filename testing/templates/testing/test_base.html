@@ -8,7 +8,7 @@
             {% for question in test.questions.all|shuffle %}
                 {% if question.answers.all|count_of_true_param:"correct" > 0 %}
                     <div id="{{ forloop.counter0 }}">
-                        <dl class="lead">{{ question.text }}</dl>
+                        <dl class="lead">{{ question.text|linebreaks }}</dl>
                         {% if question.image %}
                             <img src="{{ question.image.url }}" class="img-rounded center-block img-fluid" alt="image">
                         {% endif %}
