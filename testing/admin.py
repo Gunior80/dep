@@ -166,6 +166,8 @@ class ResultInLine(admin.TabularInline):
     def time(self, obj):
         # Метод для поля "time", подсчитывающий количество
         # минут и секунд, за которые пройден тест
+        if obj.end_test_date is None:
+            return 'Тест не завершен'
         delta = obj.end_test_date - obj.start_test_date
         minutes = (delta.seconds % 3600) // 60
         seconds = (delta.seconds % 60)
