@@ -5,7 +5,7 @@
     <form method="POST" id="testform" action="javascript:void(null);">
         {% csrf_token %}
         <div id="progress-screen">
-            {% for question in test.questions.all|shuffle %}
+            {% for question in questions.all|shuffle %}
                 {% if question.answers.all|count_of_true_param:"correct" > 0 %}
                     <div id="{{ forloop.counter0 }}">
                         <dl class="lead">{{ question.text|linebreaks }}</dl>

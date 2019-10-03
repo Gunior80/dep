@@ -75,6 +75,11 @@ class TestBaseView(DetailView):
     model = models.Test
     template_name = 'testing/test_base.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(TestBaseView, self).get_context_data(**kwargs)
+        context['questions'] = models.Question.objects.filter(answers__correct=True, test=kwargs['object']).distinct()
+        return context
+
     def get(self, request, *args, **kwargs):
         test_id = kwargs['pk']
         test = models.Test.objects.all().filter(id=test_id).first()
@@ -102,6 +107,8 @@ class TestBaseView(DetailView):
                 for answer in answers:
                     if answer.correct:
                         dictionary[str(question.id)].append(str(answer.id))
+                if len(dictionary[str(question.id)]) < 1:
+                    del dictionary[str(question.id)]
             over = len(dictionary)
             test = models.Test.objects.all().filter(id=kwargs['pk']).first()
             summ = 0
