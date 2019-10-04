@@ -81,16 +81,16 @@ class Profile(AbstractBaseUser, PermissionsMixin):
 @receiver(signal=pre_save, sender=Profile)
 def save_profile(sender, instance, signal, **kwargs):
     user = Profile.objects.filter(username=instance.username).first()
-
+    instance.username = instance.username.title()
     if user is None:
         if instance.password == '':
-            instance.set_password(instance.username)
+            instance.set_password(instance.username.lower())
             instance.is_staff = False
         else:
             instance.set_password(instance.password)
     else:
         if instance.password == '':
-            instance.set_password(instance.username)
+            instance.set_password(instance.username.lower())
             instance.is_staff = False
         else:
             if user.password == instance.password:
