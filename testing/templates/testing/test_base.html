@@ -34,9 +34,13 @@
                 <button id="next" onclick="clk('next')" type="button" class="btn btn-primary">Следующий-></button>
                 <button id="finish" onclick="clk('finish')" type="submit" class="btn btn-primary">Завершить тест</button>
             </div>
-            <div class="text-right">
-                <p>Осталось: <em id="min"></em>:<em id="sec"></em></p>
-            </div>
+            <hr/>
+            <table width="100%">
+                <tr>
+                    <td><div class="text-left">Вопрос: <em id="qstn">1</em> из {{ questions|length }}</div></td>
+                    <td><div class="text-right">Осталось: <em id="min"></em>:<em id="sec"></em></div></td>
+                </tr>
+            </table>
         </div>
     </form>
 
@@ -89,6 +93,7 @@
                                     $("#next").prop('disabled', true);
                                 }
                             }
+                            $('#qstn').text(k + 2);
                         }
                         if (nav === 'back') {
                             if (k > 0) {
@@ -101,6 +106,7 @@
                             if ((k - 1) === 0) {
                                 $("#back").prop('disabled', true);
                             }
+                            $('#qstn').text(k);
                         }
                         break;
                     };
@@ -133,8 +139,18 @@
         let sec = 0;
         countdown(); // вызов функции
         function countdown(){  // функция обратного отсчета
-            $('#min').text(min);
-            $('#sec').text(sec);
+            if (min < 10){
+                $('#min').text('0'+min);
+            }
+            else {
+                $('#min').text(min);
+            }
+            if (sec < 10){
+                $('#sec').text('0'+sec);
+            }
+            else {
+                $('#sec').text(sec);
+            }
             if (min > 0){
                 if (sec === 0){
                     min--;
