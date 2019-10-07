@@ -24,7 +24,8 @@ class BaseAdminModel(admin.ModelAdmin):
 
 class DepartamentAdmin(BaseAdminModel):
     list_display = ['name', ]
-    fields = ('name',('description_open', 'description_close'), )
+    fields = ('name', ('description_open', 'description_close', ), )
+
     # Выводит список отделов,
     # в которых состоит данный администратор
     def get_queryset(self, request):
@@ -167,7 +168,7 @@ class ResultInLine(admin.TabularInline):
         # Метод для поля "time", подсчитывающий количество
         # минут и секунд, за которые пройден тест
         if obj.end_test_date is None:
-            return 'Тест не завершен'
+            return 'Тест не завершен. \n Начат %s' % obj.start_test_date.strftime('%Y.%m.%d %T')
         delta = obj.end_test_date - obj.start_test_date
         minutes = (delta.seconds % 3600) // 60
         seconds = (delta.seconds % 60)
