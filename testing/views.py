@@ -42,11 +42,11 @@ class Login(DetailView):
     def post(self, request, **kwargs):
         if request.POST:
             data = dict(request.POST)
-            user = models.Profile.objects.all().filter(username=data['username'][0].title()).first()
+            user = models.Profile.objects.all().filter(username=data['username'][0].upper()).first()
             if user is None:
                 messages.error(request, 'Такого пользователя не существует')
             else:
-                if user.check_password(user.username.lower()):
+                if user.check_password(user.username):
                     login(request, user)
                     return redirect(reverse('testing:auth_test_list', kwargs=kwargs))
                 else:
