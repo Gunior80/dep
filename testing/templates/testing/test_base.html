@@ -44,30 +44,34 @@
         </div>
     </form>
 
-
     <script>
-        let questions = $("#progress-screen").children().length-1;
+
+        var main_container = document.getElementById('progress-screen');
+        var back = document.getElementById('back');
+        var next = document.getElementById('next');
+
+        var questions = main_container.children.length - 1;
+        var current_question = document.getElementById('qstn');
+
+
         for (let i = 1; i <= questions; i++){
-            $("#"+i).hide();
-        };
-        $("#back").prop('disabled', true);
-
-
-        function isVisible(el){
-            let element = $(el);
-            return ((element.css('display') !== 'none') && (element.css('visibility') !== 'hidden') && (element.css('opacity') !== 0));
+            let child = document.getElementById(i);
+            child.style.display = "none";
         }
+        back.disabled = true;
 
         function check(el){
-            let score_parent = $(el).find(".count");
-            let count = 0;
-            let score = score_parent.text();
-            if (score !== ''){
-                $(el).find(".check").each(function() {
-                    if (this.checked === true) {
+            let element = document.getElementById(el);
+            let score_elem = element.getElementsByClassName("count");
+            if (score_elem.length > 0){
+                let score = score_elem.item(0).innerHTML;
+                let count = 0;
+                let elements = element.querySelectorAll('.check');
+                for (let i = 0; i < elements.length; i++){
+                    if (elements[i].checked === true) {
                         count = count + 1;
                     }
-                });
+                }
                 if (count > score){
                     return false;
                 }
@@ -77,42 +81,45 @@
 
         function clk(nav){
             for (let k = 0; k <= questions; k++){
-                if (isVisible("#"+k)){
-                    if (check("#"+k) === true) {
+                let el = document.getElementById(k);
+                if (el.style.display !== 'none'){
+                    if (check(k) === true) {
                         if (nav === 'finish') {
                             done();
                         }
                         if (nav === 'next') {
                             if (k < questions) {
-                                $("#" + k).hide();
-                                $("#" + (k + 1)).show();
+                                el.style.display = "none";
+                                let el_next = document.getElementById(k + 1);
+                                el_next.style.display = "block";
                                 if (k === 0) {
-                                    $("#back").prop('disabled', false);
+                                    back.disabled = false;
                                 }
                                 if ((k + 1) === questions) {
-                                    $("#next").prop('disabled', true);
+                                    next.disabled = true;
                                 }
                             }
-                            $('#qstn').text(k + 2);
+                            current_question.innerHTML = k + 2;
                         }
                         if (nav === 'back') {
                             if (k > 0) {
-                                $("#" + k).hide();
-                                $("#" + (k - 1)).show();
+                                el.style.display = "none";
+                                let el_prev = document.getElementById(k - 1);
+                                el_prev.style.display = "block";
                             }
                             if (k === questions) {
-                                $("#next").prop('disabled', false);
+                                next.disabled = false;
                             }
                             if ((k - 1) === 0) {
-                                $("#back").prop('disabled', true);
+                                back.disabled = true;
                             }
-                            $('#qstn').text(k);
+                            current_question.innerHTML = k;
                         }
                         break;
-                    };
-                };
-            };
-        };
+                    }
+                }
+            }
+        }
 
         let finnaly = false;
 
@@ -132,24 +139,26 @@
                     alert('Возникла ошибка: ' + xhr.responseCode);
                 }
             });
-        };
+        }
 
+        var minutes = document.getElementById("min");
+        var seconds = document.getElementById("sec");
         let timer; // пока пустая переменная
         let min = {{ test.time }}; // стартовое значение обратного отсчета
         let sec = 0;
         countdown(); // вызов функции
         function countdown(){  // функция обратного отсчета
             if (min < 10){
-                $('#min').text('0'+min);
+                minutes.innerHTML = '0' + min;
             }
             else {
-                $('#min').text(min);
+                minutes.innerHTML = '' + min;
             }
             if (sec < 10){
-                $('#sec').text('0'+sec);
+                seconds.innerHTML = '0' + sec;
             }
             else {
-                $('#sec').text(sec);
+                seconds.innerHTML = '' + sec;
             }
             if (min > 0){
                 if (sec === 0){
@@ -211,6 +220,21 @@
             }
 
         })(window);
+
+        window.onbeforeunload = function (e) {
+            if (finnaly === false) {
+                // Ловим событие для Interner Explorer
+                var e = e || window.event;
+                var myMessage = "Вы действительно хотите завершить тест?";
+                // Для Internet Explorer и Firefox
+                if (e) {
+                    e.returnValue = myMessage;
+                }
+                // Для Safari и Chrome
+                return myMessage;
+            }
+        };
+
 
     </script>
 {% endblock %}
