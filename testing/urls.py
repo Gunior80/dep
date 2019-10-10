@@ -11,6 +11,8 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/$', views.TestNameView.as_view(), name='test_list'),
     url(r'^test/(?P<pk>\d+)/', views.TestBaseView.as_view(), name='test_base'),
 
+    url(r'^sync$', views.SyncTime.as_view(), name='sync'),
+
     url(r'^login/(?P<pk>\d+)/', views.Login.as_view(), name='login'),
     url(r'^auth/(?P<pk>\d+)/$', views.AuthTestListView.as_view(), name='auth_test_list'),
     url(r'^auth/test/(?P<pk>\d+)/', views.TestBaseView.as_view(), name='logged_test_base'),

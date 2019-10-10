@@ -1,8 +1,10 @@
 import datetime
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.http import JsonResponse
 from django.shortcuts import HttpResponse, redirect
 from django.urls import reverse
+from django.views import View
 from . import models
 from django.views.generic import ListView, DetailView
 
@@ -27,6 +29,11 @@ class TestNameView(DetailView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             logout(request)
+        try:
+            request.session.pop('start_test_time')
+            request.session.pop('test')
+        except KeyError:
+            pass
         return super().get(self, request, *args, **kwargs)
 
 
@@ -60,6 +67,11 @@ class AuthTestListView(DetailView):
     pk_url_kwarg = 'pk'
 
     def get(self, request, *args, **kwargs):
+        try:
+            request.session.pop('start_test_time')
+            request.session.pop('test')
+        except KeyError:
+            pass
         if not request.user.is_authenticated:
             return redirect(reverse('testing:login', kwargs=kwargs))
         else:
@@ -94,6 +106,8 @@ class TestBaseView(DetailView):
             if test.logged is True:
                 messages.error(request, 'Вы не можете решать тестовые задания без авторизации')
                 return redirect(reverse('testing:test_list', kwargs=kwargs))
+        request.session['start_test_time'] = str(datetime.datetime.now())
+        request.session['test'] = str(test.id)
         return super().get(self, request, *args, **kwargs)
 
     def post(self, request, **kwargs):
@@ -145,3 +159,27 @@ class TestBaseView(DetailView):
                 msg = 'Тест завершен.\nВы набрали баллов: %d\nПравильно отвеченных вопросов: %d из %d' % \
                       (summ, correct, over)
             return HttpResponse(msg, content_type='text/plain')
+
+
+class SyncTime(View):
+    def post(self, request, **kwargs):
+        if request.POST:
+            data_response = {'min': '0', 'sec': '0'}
+            start_test_time = request.session.get('start_test_time')
+            if start_test_time is None:
+                return HttpResponse(JsonResponse(data_response), content_type="application/json")
+            then = datetime.datetime.strptime(start_test_time, '%Y-%m-%d %H:%M:%S.%f')
+            now = datetime.datetime.now()
+            delta_now = now - then
+            test_id = request.session.get('test')
+            if test_id is None:
+                return HttpResponse(JsonResponse(data_response), content_type="application/json")
+            test = models.Test.objects.filter(id=test_id).first()
+            if test is None:
+                return HttpResponse(JsonResponse(data_response), content_type="application/json")
+            print(test)
+            over_time = datetime.timedelta(minutes=test.time)
+            delta = over_time - delta_now
+            total_seconds = delta.total_seconds()
+            data_response = {'min': total_seconds // 60, 'sec': int(total_seconds % 60)}
+            return HttpResponse(JsonResponse(data_response), content_type="application/json")

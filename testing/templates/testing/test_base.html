@@ -45,7 +45,7 @@
     </form>
 
     <script>
-
+        var next_link = "{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}";
         var main_container = document.getElementById('progress-screen');
         var back = document.getElementById('back');
         var next = document.getElementById('next');
@@ -133,11 +133,26 @@
                 data: msg,
                 success: function(data) {
                     alert(data);
-                    document.location.replace("{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}");
+                    document.location.replace(next_link);
                 },
                 error:  function(xhr, str){
                     alert('Возникла ошибка: ' + xhr.responseCode);
                 }
+            });
+        }
+
+        function sync(){
+            let token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+            let msg = { csrfmiddlewaretoken: token };
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'testing:sync' %}",
+                data: msg,
+                success: function(data) {
+                    min = data["min"];
+                    sec = data["sec"];
+                },
+                error:  function(xhr, str){}
             });
         }
 
@@ -146,6 +161,7 @@
         let timer; // пока пустая переменная
         let min = {{ test.time }}; // стартовое значение обратного отсчета
         let sec = 0;
+        let tick = 0;
         countdown(); // вызов функции
         function countdown(){  // функция обратного отсчета
             if (min < 10){
@@ -171,14 +187,23 @@
                 timer = setTimeout(countdown, 1000);
             }
             else{
-                if (sec === 0){
+                if (sec < 1){
                     clearTimeout(timer); // таймер остановится на нуле
+                    minutes.innerHTML = '00';
+                    seconds.innerHTML = '00';
                     done();
                 }
                 else{
                     sec--;
                     timer = setTimeout(countdown, 1000);
                 }
+            }
+            if (tick < 10){
+                tick++;
+            }
+            else{
+                sync();
+                tick = 0;
             }
         }
 
@@ -224,11 +249,11 @@
         window.onbeforeunload = function (e) {
             if (finnaly === false) {
                 // Ловим событие для Interner Explorer
-                var e = e || window.event;
+                var event = e || window.event;
                 var myMessage = "Вы действительно хотите завершить тест?";
                 // Для Internet Explorer и Firefox
-                if (e) {
-                    e.returnValue = myMessage;
+                if (event) {
+                    event.returnValue = myMessage;
                 }
                 // Для Safari и Chrome
                 return myMessage;

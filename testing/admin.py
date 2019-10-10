@@ -165,13 +165,17 @@ class ResultInLine(admin.TabularInline):
     extra = 0
 
     def time(self, obj):
+        import datetime
         # Метод для поля "time", подсчитывающий количество
         # минут и секунд, за которые пройден тест
         if obj.end_test_date is None:
             return 'Тест не завершен. \n Начат %s' % obj.start_test_date.strftime('%Y.%m.%d %T')
         delta = obj.end_test_date - obj.start_test_date
-        minutes = (delta.seconds % 3600) // 60
-        seconds = (delta.seconds % 60)
+        minutes = delta.seconds // 60
+        seconds = delta.seconds % 60
+        test_time = datetime.timedelta(minutes=obj.test.time)
+        if delta >= test_time:
+            return '%d мин. 0 сек. \n Время истекло' % obj.test.time
         return '%d мин. %d сек.' % (minutes, seconds)
 
     time.short_description = "Затрачено времени"
