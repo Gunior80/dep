@@ -48,8 +48,9 @@ class DepartamentAdmin(BaseAdminModel):
 test_admin.register(Departament, DepartamentAdmin)
 
 
-class AnswerInLine(nested_admin.NestedStackedInline):
+class AnswerInLine(nested_admin.NestedTabularInline):
     model = Answer
+    fields = ('correct', 'text',)
     extra = 0
     min_num = 2
 
