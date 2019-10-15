@@ -44,6 +44,21 @@
         </div>
     </form>
 
+    <div class="modal fade" id="result" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-body">
+          <p id="response"></p>
+        </div>
+        <div class="modal-footer">
+          <button onclick="LoadURL()" type="button" class="btn btn-primary" data-dismiss="modal">Далее</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
     <script>
         var next_link = "{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}";
         var main_container = document.getElementById('progress-screen');
@@ -53,6 +68,9 @@
         var questions = main_container.children.length - 1;
         var current_question = document.getElementById('qstn');
 
+        function LoadURL() {
+            document.location.replace(next_link);
+        }
 
         for (let i = 1; i <= questions; i++){
             let child = document.getElementById(i);
@@ -132,8 +150,10 @@
                 url: document.location.href,
                 data: msg,
                 success: function(data) {
-                    alert(data);
-                    document.location.replace(next_link);
+                    clearTimeout(timer);
+                    $('#result').modal('show');
+                    let response_p = document.getElementById("response");
+                    response_p.innerText = data;
                 },
                 error:  function(xhr, str){
                     alert('Возникла ошибка: ' + xhr.responseCode);
