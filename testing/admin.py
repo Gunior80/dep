@@ -162,7 +162,7 @@ test_admin.register(Profile, ProfileAdmin)
 
 class ResultInLine(admin.TabularInline):
     model = Result
-    readonly_fields = ['user', 'score', 'time']
+    readonly_fields = ['user', 'score', 'full_correct', 'non_full_correct', 'time']
     extra = 0
 
     def time(self, obj):

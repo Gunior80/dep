@@ -217,6 +217,10 @@ class Result(models.Model):
                              on_delete=models.CASCADE, editable=False, blank=False)
     score = models.PositiveIntegerField(default="0", verbose_name="Количестово баллов",
                                         editable=False, blank=True)
+    full_correct = models.PositiveIntegerField(default="0", verbose_name="Полных ответов",
+                                               editable=False, blank=True)
+    non_full_correct = models.PositiveIntegerField(default="0", verbose_name="Неполных ответов",
+                                                   editable=False, blank=True)
     start_test_date = models.DateTimeField(auto_now_add=True, editable=False,
                                            verbose_name="Тест начат", blank=False)
     end_test_date = models.DateTimeField(editable=False, verbose_name="Тест завершен", null=True)

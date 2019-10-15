@@ -125,9 +125,13 @@ class TestBaseView(DetailView):
                     del dictionary[str(question.id)]
             over = len(dictionary)
             test = models.Test.objects.all().filter(id=kwargs['pk']).first()
-            summ = 0
-            correct = 0
+            max_points = 0
+            points = 0
+            full_correct = 0
+            non_full_correct = 0
             for key in dictionary.keys():
+                current_question = models.Question.objects.filter(id=key).first()
+                max_points += current_question.score
                 maxtrue = len(dictionary[key])
                 try:
                     if maxtrue > 1:
@@ -136,28 +140,28 @@ class TestBaseView(DetailView):
                             if element in data[key]:
                                 count += 1
                         if maxtrue == count:
-                            summ += models.Question.objects.filter(id=key).first().score
-                            correct += 1
-                        else:
-                            summ += test.points
+                            points += current_question.score
+                            full_correct += 1
+                        elif count > 0:
+                            non_full_correct += 1
+                            points += test.points
                     elif dictionary[key] == data[key]:
-                        summ += models.Question.objects.filter(id=key).first().score
-                        correct += 1
+                        points += current_question.score
+                        full_correct += 1
                 except KeyError:
                     continue
             if request.user.is_authenticated:
                 if test.logged:
                     result = models.Result.objects.filter(user=request.user, test=test).first()
-                    result.score = summ
+                    result.score = points
+                    result.full_correct = full_correct
+                    result.non_full_correct = non_full_correct
                     result.end_test_date = datetime.datetime.now()
                     result.save()
                     msg = 'Тест завершен.'
-                else:
-                    msg = 'Тест завершен.\nВы набрали баллов: %d\nПравильно отвеченных вопросов: %d из %d' % \
-                          (summ, correct, over)
-            else:
-                msg = 'Тест завершен.\nВы набрали баллов: %d\nПравильно отвеченных вопросов: %d из %d' % \
-                      (summ, correct, over)
+                    return HttpResponse(msg, content_type='text/plain')
+            msg = 'Тест завершен.\nНабрано баллов %d из %d\nПолных ответов: %d\nНеполных ответов: %d' % \
+                  (points, max_points, full_correct, non_full_correct)
             return HttpResponse(msg, content_type='text/plain')
 
 
@@ -177,7 +181,6 @@ class SyncTime(View):
             test = models.Test.objects.filter(id=test_id).first()
             if test is None:
                 return HttpResponse(JsonResponse(data_response), content_type="application/json")
-            print(test)
             over_time = datetime.timedelta(minutes=test.time)
             delta = over_time - delta_now
             total_seconds = delta.total_seconds()
