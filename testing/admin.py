@@ -1,7 +1,10 @@
+import xlwt
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.db.models import Q
+from django.http import HttpResponse
+
 from testing.models import Test, Question, Answer, Departament, Result, Profile, TestResult
 import nested_admin
 
@@ -160,24 +163,28 @@ class ProfileAdmin(BaseAdminModel):
 test_admin.register(Profile, ProfileAdmin)
 
 
+def get_time(obj):
+    import datetime
+    # Метод для поля "time", подсчитывающий количество
+    # минут и секунд, за которые пройден тест
+    if obj.end_test_date is None:
+        return 'Тест не завершен. \n Начат %s' % obj.start_test_date.strftime('%Y.%m.%d %T')
+    delta = obj.end_test_date - obj.start_test_date
+    minutes = delta.seconds // 60
+    seconds = delta.seconds % 60
+    test_time = datetime.timedelta(minutes=obj.test.time)
+    if delta >= test_time:
+        return '%d мин. 0 сек. \n Время истекло' % obj.test.time
+    return '%d мин. %d сек.' % (minutes, seconds)
+
+
 class ResultInLine(admin.TabularInline):
     model = Result
     readonly_fields = ['user', 'score', 'full_correct', 'non_full_correct', 'time']
     extra = 0
 
     def time(self, obj):
-        import datetime
-        # Метод для поля "time", подсчитывающий количество
-        # минут и секунд, за которые пройден тест
-        if obj.end_test_date is None:
-            return 'Тест не завершен. \n Начат %s' % obj.start_test_date.strftime('%Y.%m.%d %T')
-        delta = obj.end_test_date - obj.start_test_date
-        minutes = delta.seconds // 60
-        seconds = delta.seconds % 60
-        test_time = datetime.timedelta(minutes=obj.test.time)
-        if delta >= test_time:
-            return '%d мин. 0 сек. \n Время истекло' % obj.test.time
-        return '%d мин. %d сек.' % (minutes, seconds)
+        return get_time(obj)
 
     time.short_description = "Затрачено времени"
 
@@ -196,7 +203,7 @@ class TestResultAdmin(BaseAdminModel):
     inlines = [
         ResultInLine,
     ]
-    actions = ['remove_results']
+    actions = ['remove_results', 'export_as_xls']
 
     def remove_results(self, request, queryset):
         # Метод очистки всех результатов
@@ -207,6 +214,35 @@ class TestResultAdmin(BaseAdminModel):
                 result.delete()
 
     remove_results.short_description = "Очистить результаты"
+
+    def export_as_xls(self, request, queryset):
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="results.xls"'
+        wb = xlwt.Workbook(encoding='utf-8')
+        for element in queryset:
+            ws = wb.add_sheet(element.name)
+            results = Result.objects.filter(test=element)
+            rows = list(results.values_list('user__username', 'score', 'full_correct', 'non_full_correct', ))[:]
+            row_num = 0
+
+            font_style = xlwt.XFStyle()
+            font_style.font.bold = True
+
+            columns = ['Тестируемый', 'Баллы', 'Полных ответов', 'Частичных ответов', 'Время']
+            widthes = [35, 7, 20, 20, 15]  # Примерные длины столбцов
+            for col_num in range(len(columns)):
+                ws.col(col_num).width = 256 * widthes[col_num]
+                ws.write(row_num, col_num, columns[col_num], font_style)
+            font_style = xlwt.XFStyle()
+            for row in rows:
+                row_num += 1
+                tmp = row + (get_time(results.filter(user__username=row[0]).first()),)
+                for col_num in range(len(tmp)):
+                    ws.write(row_num, col_num, tmp[col_num], font_style)
+        wb.save(response)
+        return response
+
+    export_as_xls.short_description = "Экспорт в xls"
 
     def tested(self, obj):
         # Метод поля, подсчитывающий количество
@@ -220,7 +256,6 @@ class TestResultAdmin(BaseAdminModel):
         # Выводит список тестов, а также
         # дополнительную информацию
         qs = super(TestResultAdmin, self).get_queryset(request)
-        qs = qs.filter(logged=True)
         self.list_filter = []
         if request.user.is_superuser:
             return qs
