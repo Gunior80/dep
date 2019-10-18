@@ -5,3 +5,4 @@ python-monkey-business==1.0.0
 pytz==2019.2
 six==1.12.0
 sqlparse==0.3.0
+xlwt==1.3.0
