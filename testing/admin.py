@@ -98,7 +98,7 @@ test_admin.register(Test, TestAdmin)
 
 
 class ProfileAdmin(BaseAdminModel):
-    list_display = ['username', 'public', 'dep']
+    list_display = ['username', 'is_staff', 'public', 'dep']
 
     def set_fields(self, request, obj=None, **kwargs):
         self.fields.append('public')
@@ -155,6 +155,13 @@ class ProfileAdmin(BaseAdminModel):
         return ', '.join([dep.name for dep in deps])
 
     dep.short_description = "Отдел"
+
+    def is_staff(self, obj):
+        # Метод для поля "is_admin", отображает,
+        # является ли пользователь администратором
+        return obj.is_staff
+
+    is_staff.short_description = "Администратор"
 
     class Media:
         js = ("admin/js/check_first.js",)
