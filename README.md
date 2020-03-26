@@ -1,20 +1,5 @@
 Приложение Django для тестирования пользователей
 
-# Зависимости
-```
-Python 3.7
-
-
-Django==2.2.5
-django-nested-admin==3.2.3
-Pillow==6.2.0
-python-monkey-business==1.0.0
-pytz==2019.2
-six==1.12.0
-sqlparse==0.3.0
-xlwt==1.3.0
-```
-
 # Настройка и запуск
 
 Скачиваем и устанавливаем Python:
