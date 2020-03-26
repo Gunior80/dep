@@ -1,5 +1,8 @@
 {% extends "base.html" %}
+{% load static %}
 {% load poll_extras %}
+
+{% block scripts %}<script defer src="{% static 'js/test_base.js' %}"></script>{% endblock %}
 
 {% block body_block %}
     <form method="POST" id="testform" action="javascript:void(null);">
@@ -7,10 +10,10 @@
         <div id="progress-screen">
             {% for question in questions.all|shuffle %}
                 {% if question.answers.all|count_of_true_param:"correct" > 0 %}
-                    <div id="{{ forloop.counter0 }}">
-                        <dl class="lead">{{ question.text|linebreaks }}</dl>
+                    <div id="{{ forloop.counter }}">
+                        <div class="lead">{{ question.text|linebreaks }}</div>
                         {% if question.image %}
-                            <img src="{{ question.image.url }}" class="img-rounded center-block img-fluid" alt="image">
+                            <p style="text-align: center;"><img class="img-fluid" src="{{ question.image.url }}" style="max-height: 400px;" alt="image"></p>
                         {% endif %}
                         <input type="hidden" value="{{question.id}}" name="question_id">
                         <hr/>
@@ -28,258 +31,41 @@
                 {% endif %}
             {% endfor %}
         </div>
-        <div>
-            <div class="btn-group btn-group-lg">
-                <button id="back" onclick="clk('back')" type="button" class="btn btn-primary"><-Предыдущий</button>
-                <button id="next" onclick="clk('next')" type="button" class="btn btn-primary">Следующий-></button>
-                <button id="finish" onclick="clk('finish')" type="submit" class="btn btn-primary">Завершить тест</button>
-            </div>
-            <hr/>
-            <table width="100%">
+            <table width="100%" class="tab-content">
                 <tr>
-                    <td><div class="text-left">Вопрос: <em id="qstn">1</em> из {{ questions|length }}</div></td>
-                    <td><div class="text-right">Осталось: <em id="min"></em>:<em id="sec"></em></div></td>
+                    <td>
+                        <div class="btn-group">
+                            <button id="back" onclick="clk('back')" type="button" class="btn btn-primary"><-Предыдущий</button>
+                            <button id="next" onclick="clk('next')" type="button" class="btn btn-primary">Следующий-></button>
+                        </div>
+                    </td>
+                    <td>
+                        <button id="finish" onclick="clk('finish')" type="submit" class="btn btn-primary float-right">Завершить тест</button>
+                    </td>
                 </tr>
             </table>
-        </div>
+            <div style="position: fixed; height: 100%; top: 0px; right: 10%; display: flex; flex-direction: column; flex-wrap: wrap;">
+                {% for question in questions.all %}
+                    <a style="height: 40px; width: 40px;" id="num_{{ forloop.counter }}" onclick="clk({{ forloop.counter }})" class="rounded page-link">{{ forloop.counter }}</a>
+                {% endfor %}
+            </div>
+    <div class="text-center text-info" style="display: block; bottom: 5px">Осталось: <em id="min">{{ test.time }}</em>:<em id="sec"></em></div>
+
+        <input id="next_url" type="hidden" value="{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}">
+        <input id="sync_url" type="hidden" value="{% url 'testing:sync' %}">
     </form>
 
     <div class="modal fade" id="result" role="dialog" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog">
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-body">
-          <p id="response"></p>
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p id="response"></p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="LoadURL()" type="button" class="btn btn-primary" data-dismiss="modal">Далее</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-footer">
-          <button onclick="LoadURL()" type="button" class="btn btn-primary" data-dismiss="modal">Далее</button>
-        </div>
-      </div>
-
     </div>
-  </div>
-
-    <script>
-        var next_link = "{% if test.logged %}{% url 'testing:auth_test_list' pk=test.departament.id %}{% else %}{% url 'testing:test_list' pk=test.departament.id %}{% endif %}";
-        var main_container = document.getElementById('progress-screen');
-        var back = document.getElementById('back');
-        var next = document.getElementById('next');
-
-        var questions = main_container.children.length - 1;
-        var current_question = document.getElementById('qstn');
-
-        function LoadURL() {
-            document.location.replace(next_link);
-        }
-
-        for (let i = 1; i <= questions; i++){
-            let child = document.getElementById(i);
-            child.style.display = "none";
-        }
-        back.disabled = true;
-
-        function check(el){
-            let element = document.getElementById(el);
-            let score_elem = element.getElementsByClassName("count");
-            if (score_elem.length > 0){
-                let score = score_elem.item(0).innerHTML;
-                let count = 0;
-                let elements = element.querySelectorAll('.check');
-                for (let i = 0; i < elements.length; i++){
-                    if (elements[i].checked === true) {
-                        count = count + 1;
-                    }
-                }
-                if (count > score){
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function clk(nav){
-            for (let k = 0; k <= questions; k++){
-                let el = document.getElementById(k);
-                if (el.style.display !== 'none'){
-                    if (check(k) === true) {
-                        if (nav === 'finish') {
-                            done();
-                        }
-                        if (nav === 'next') {
-                            if (k < questions) {
-                                el.style.display = "none";
-                                let el_next = document.getElementById(k + 1);
-                                el_next.style.display = "block";
-                                if (k === 0) {
-                                    back.disabled = false;
-                                }
-                                if ((k + 1) === questions) {
-                                    next.disabled = true;
-                                }
-                            }
-                            current_question.innerHTML = k + 2;
-                        }
-                        if (nav === 'back') {
-                            if (k > 0) {
-                                el.style.display = "none";
-                                let el_prev = document.getElementById(k - 1);
-                                el_prev.style.display = "block";
-                            }
-                            if (k === questions) {
-                                next.disabled = false;
-                            }
-                            if ((k - 1) === 0) {
-                                back.disabled = true;
-                            }
-                            current_question.innerHTML = k;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        let finnaly = false;
-
-        function done()
-        {
-            finnaly = true;
-            let msg = $('#testform').serialize();
-            $.ajax({
-                type: 'POST',
-                url: document.location.href,
-                data: msg,
-                success: function(data) {
-                    clearTimeout(timer);
-                    $('#result').modal('show');
-                    let response_p = document.getElementById("response");
-                    response_p.innerText = data;
-                },
-                error:  function(xhr, str){
-                    alert('Возникла ошибка: ' + xhr.responseCode);
-                }
-            });
-        }
-
-        function sync(){
-            let token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
-            let msg = { csrfmiddlewaretoken: token };
-            $.ajax({
-                type: 'POST',
-                url: "{% url 'testing:sync' %}",
-                data: msg,
-                success: function(data) {
-                    min = data["min"];
-                    sec = data["sec"];
-                },
-                error:  function(xhr, str){}
-            });
-        }
-
-        var minutes = document.getElementById("min");
-        var seconds = document.getElementById("sec");
-        let timer; // пока пустая переменная
-        let min = {{ test.time }}; // стартовое значение обратного отсчета
-        let sec = 0;
-        let tick = 0;
-        countdown(); // вызов функции
-        function countdown(){  // функция обратного отсчета
-            if (min < 10){
-                minutes.innerHTML = '0' + min;
-            }
-            else {
-                minutes.innerHTML = '' + min;
-            }
-            if (sec < 10){
-                seconds.innerHTML = '0' + sec;
-            }
-            else {
-                seconds.innerHTML = '' + sec;
-            }
-            if (min > 0){
-                if (sec === 0){
-                    min--;
-                    sec = 59;
-                }
-                else{
-                    sec--;
-                }
-                timer = setTimeout(countdown, 1000);
-            }
-            else{
-                if (sec < 1){
-                    clearTimeout(timer); // таймер остановится на нуле
-                    minutes.innerHTML = '00';
-                    seconds.innerHTML = '00';
-                    done();
-                }
-                else{
-                    sec--;
-                    timer = setTimeout(countdown, 1000);
-                }
-            }
-            if (tick < 10){
-                tick++;
-            }
-            else{
-                sync();
-                tick = 0;
-            }
-        }
-
-        (function (global) {
-            if(typeof (global) === "undefined") {
-                throw new Error("window is undefined");
-            }
-
-            var _hash = "!";
-            var noBackPlease = function () {
-                global.location.href += "#";
-
-                // making sure we have the fruit available for juice (^__^)
-                global.setTimeout(function () {
-                    global.location.href += "!";
-                }, 50);
-            };
-
-            global.onhashchange = function () {
-                if (global.location.hash !== _hash) {
-                    global.location.hash = _hash;
-                }
-            };
-
-            global.onload = function () {
-                if (finnaly === false){
-                    noBackPlease();
-
-                    // disables backspace on page except on input fields and textarea..
-                    document.body.onkeydown = function (e) {
-                        var elm = e.target.nodeName.toLowerCase();
-                        if (e.which === 8 && (elm !== 'input' && elm  !== 'textarea')) {
-                            e.preventDefault();
-                        }
-                        // stopping event bubbling up the DOM tree..
-                        e.stopPropagation();
-                    };
-                }
-            }
-
-        })(window);
-
-        window.onbeforeunload = function (e) {
-            if (finnaly === false) {
-                // Ловим событие для Interner Explorer
-                var event = e || window.event;
-                var myMessage = "Вы действительно хотите завершить тест?";
-                // Для Internet Explorer и Firefox
-                if (event) {
-                    event.returnValue = myMessage;
-                }
-                // Для Safari и Chrome
-                return myMessage;
-            }
-        };
-
-
-    </script>
 {% endblock %}

@@ -2,7 +2,6 @@ from django import template
 from testing import models
 import random
 
-
 register = template.Library()
 
 
@@ -10,7 +9,7 @@ register = template.Library()
 def count_of_true_param(values, arg):
     count = 0
     for value in values:
-        if getattr(value,arg):
+        if getattr(value, arg):
             count += 1
     return count
 

@@ -1,13 +1,35 @@
 {% extends 'base.html' %}
-
+{% load poll_extras %}
 
 {% block body_block %}
-    <dl>{{ departament.description_open|linebreaks }}</dl>
-    <dl class="lead">Список тестов:</dl>
-    <hr/>
-    {% if user.is_authenticated == False %}
+    {% if user.is_authenticated %}
+        <p>Здравствуйте: {{ user.username }}</p>
+        <dl>{{ departament.description_close|linebreaks }}</dl>
+        <hr/>
         {% for test in departament.tests.all %}
-            {% if test.logged == False %}
+            {% if test.logged and test.enabled == True %}
+                {% if test.questions.all|length > 0 %}
+                    <h2 class="lead" data-toggle="tooltip" data-placement="top" title="{{ test.description }}">
+                        <ul>
+                            <li>
+                                {% if test|is_finished:user %}
+                                    <a href="{% url 'testing:test_base' pk=test.id %}">{{ test.name }} (Время на выполнение: {{ test.time }} минут)</a>
+                                {% endif %}
+                                {% if not test|is_finished:user %}
+                                    <p href="{% url 'testing:test_base' pk=test.id %}">{{ test.name }} (Завершен)</p>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </h2>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <dl>{{ departament.description_open|linebreaks }}</dl>
+        <dl class="lead">Список тестов:</dl>
+        <hr/>
+        {% for test in departament.tests.all %}
+            {% if test.logged == False and test.enabled == True %}
                 {% if test.questions.all|length > 0 %}
                     <h2 class="lead">
                         <ul>
