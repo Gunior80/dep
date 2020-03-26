@@ -129,6 +129,8 @@ class Test(models.Model):
     departament = models.ForeignKey(Departament, related_name='tests', on_delete=models.SET_DEFAULT,
                                     default="1", verbose_name="Отдел", )
     points = models.PositiveIntegerField(default="0", verbose_name="Очки за частично правильные ответы", )
+    enabled = models.BooleanField(default=True, verbose_name="Тест активен",
+                                  help_text=_('Тест доступен для прохождения'))
 
     def get_absolute_url(self):
         return reverse("testing:test", kwargs={'pk': self.pk})
