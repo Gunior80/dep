@@ -28,12 +28,12 @@ class TestNameView(DetailView):
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            logout(request)
-        try:
-            request.session.pop('start_test_time')
-            request.session.pop('test')
-        except KeyError:
-            pass
+            #logout(request)
+            try:
+                request.session.pop('start_test_time')
+                request.session.pop('test')
+            except KeyError:
+                pass
         return super().get(self, request, *args, **kwargs)
 
 
@@ -55,7 +55,7 @@ class Login(DetailView):
             else:
                 if user.check_password(user.username):
                     login(request, user)
-                    return redirect(reverse('testing:auth_test_list', kwargs=kwargs))
+                    return redirect(reverse('testing:test_list', kwargs=kwargs))
                 else:
                     messages.error(request, 'Такого пользователя не существует')
             return redirect(reverse('testing:login', kwargs=kwargs))
@@ -63,7 +63,7 @@ class Login(DetailView):
 
 class AuthTestListView(DetailView):
     model = models.Departament
-    template_name = 'testing/auth_test_list.html'
+    template_name = 'testing/test_list.html'
     pk_url_kwarg = 'pk'
 
     def get(self, request, *args, **kwargs):
@@ -101,7 +101,7 @@ class TestBaseView(DetailView):
                 result.save()
             else:
                 messages.error(request, 'Вы уже прошли задание - %s' % test.name)
-                return redirect(reverse('testing:auth_test_list', kwargs=kwargs))
+                return redirect(reverse('testing:test_list', kwargs=kwargs))
         else:
             if test.logged is True:
                 messages.error(request, 'Вы не можете решать тестовые задания без авторизации')
