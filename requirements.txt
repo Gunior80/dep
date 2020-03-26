@@ -1,4 +1,4 @@
-Django==2.2.8
+Django==2.2.10
 django-nested-admin==3.2.4
 Pillow==6.2.1
 python-monkey-business==1.0.0
