@@ -11,22 +11,17 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/testing.css' %}" />
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    {% block scripts %}{% endblock %}
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.jpg' %}"/>
     <title>Система тестирования</title>
 </head>
 <body>
-  <div class="container ">
-      <div class="jumbotron">
-          <form>
-              {% for message in messages %}
-                  <div class="message {{ message.tags }}">
-                      {{ message }}
-                  </div>
-              {% endfor %}
-          </form>
-      {% block body_block %}{% endblock %}
-      </div>
-  </div>
+    <div class="container" style="width: 75%;">
+        <div class="jumbotron" style="padding-top: 0px; padding-bottom: 15px;">
+            <form>{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</form>
+            {% block body_block %}{% endblock %}
+        </div>
+    </div>
 </body>
 </html>
 
