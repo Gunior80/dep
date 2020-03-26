@@ -58,7 +58,7 @@ class AnswerInLine(nested_admin.NestedTabularInline):
     min_num = 2
 
 
-class QuestionInLine(nested_admin.NestedStackedInline):
+class QuestionInLine(nested_admin.NestedTabularInline):
     model = Question
     extra = 0
     min_num = 2
@@ -71,7 +71,7 @@ class QuestionInLine(nested_admin.NestedStackedInline):
 
 class TestAdmin(BaseNestedModel):
     save_on_top = True
-    list_display = ['name', 'logged']
+    list_display = ['name', 'logged', 'enabled']
     inlines = [
         QuestionInLine
     ]
