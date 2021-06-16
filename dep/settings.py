@@ -136,3 +136,5 @@ MEDIA_URL = '/uploads/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 
 MAX_IMAGE_SIZE = 5
+
+LOGOUT_REDIRECT_URL = "/"

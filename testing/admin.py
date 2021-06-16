@@ -110,7 +110,7 @@ class ProfileAdmin(BaseAdminModel):
     def get_form(self, request, obj=None, **kwargs):
         # Разграничивает доступность полей для
         # суперпользователей и администраторов
-        self.fields = ['username']
+        self.fields = ['username',]
         if request.user.is_superuser:
             self.fields.append('password')
             self.fields.append('is_staff')

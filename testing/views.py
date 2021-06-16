@@ -6,7 +6,7 @@ from django.shortcuts import HttpResponse, redirect
 from django.urls import reverse
 from django.views import View
 from . import models
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 
 
 # Create your views here.
@@ -16,11 +16,6 @@ class DepartamentListView(ListView):
     context_object_name = 'departament'
     template_name = 'testing/departament_list.html'
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            logout(request)
-        return super().get(self, request, *args, **kwargs)
-
 
 class TestNameView(DetailView):
     model = models.Departament
@@ -28,7 +23,6 @@ class TestNameView(DetailView):
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            #logout(request)
             try:
                 request.session.pop('start_test_time')
                 request.session.pop('test')
@@ -37,27 +31,31 @@ class TestNameView(DetailView):
         return super().get(self, request, *args, **kwargs)
 
 
-class Login(DetailView):
+class Login(TemplateView):
     model = models.Departament
     template_name = 'testing/login.html'
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            logout(request)
-        return super().get(self, request, *args, **kwargs)
 
     def post(self, request, **kwargs):
         if request.POST:
             data = dict(request.POST)
-            user = models.Profile.objects.all().filter(username=data['username'][0].upper()).first()
+            user = models.Profile.objects.all().filter(username=data['username'][0]).first()
             if user is None:
-                messages.error(request, 'Такого пользователя не существует')
-            else:
+                user = models.Profile.objects.all().filter(username=data['username'][0].upper()).first()
+                if user is None:
+                    messages.error(request, 'Неверный логин или пароль')
+            if user is not None:
+                if user.is_staff:
+                    if user.check_password(data['password'][0]):
+                        login(request, user)
+                        if request.user.is_staff:
+                            return redirect('/admin')
+                    else:
+                        messages.error(request, 'Неверный логин или пароль')
                 if user.check_password(user.username):
                     login(request, user)
-                    return redirect(reverse('testing:test_list', kwargs=kwargs))
+                    return redirect(reverse('testing:index'))
                 else:
-                    messages.error(request, 'Такого пользователя не существует')
+                    messages.error(request, 'Неверный логин или пароль')
             return redirect(reverse('testing:login', kwargs=kwargs))
 
 

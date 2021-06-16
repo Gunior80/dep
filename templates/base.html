@@ -16,6 +16,11 @@
     <title>Система тестирования</title>
 </head>
 <body>
+    {% if user.is_authenticated %}
+        <div><a href="logout">Выйти</a></div>
+    {% else %}
+        <div><a href="login">Войти</a></div>
+    {% endif %}
     <div class="container" style="width: 75%;">
         <div class="jumbotron" style="padding-top: 0px; padding-bottom: 15px;">
             <form>{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</form>

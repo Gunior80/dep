@@ -50,7 +50,7 @@ class ProfileManager(BaseUserManager):
 
 
 class Profile(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(unique=True, max_length=255, blank=False, verbose_name="ФИО")
+    username = models.CharField(unique=True, max_length=255, blank=False, verbose_name="Логин")
     password = models.CharField(_('password'), max_length=128, default='', blank=True)
     is_staff = models.BooleanField(default=False, verbose_name="Администратор",)
     is_active = models.BooleanField(_('active'), default=True,
