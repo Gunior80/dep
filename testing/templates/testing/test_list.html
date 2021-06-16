@@ -2,9 +2,10 @@
 {% load poll_extras %}
 
 {% block body_block %}
+    <div><a href="{% url 'testing:index' %}">Вернуться на главную</a></div>
     {% url 'testing:auth_test_list' pk=departament.id as the_url %}
     {% if user.is_authenticated and request.path == the_url %}
-        <p>Здравствуйте: {{ user.username }}</p>
+        <p>Здравствуйте: {{ user.username }} </p>
         <dl>{{ departament.description_close|linebreaks }}</dl>
         <hr/>
         {% for test in departament.tests.all %}

@@ -18,9 +18,9 @@
 <body>
     {% block auth %}
         {% if user.is_authenticated %}
-            <div><a href="logout">Выйти</a></div>
+            <div><a href="/logout">Выйти</a></div>
         {% else %}
-            <div><a href="login">Войти</a></div>
+            <div><a href="/login">Войти</a></div>
         {% endif %}
     {% endblock %}
     <div class="container" style="width: 75%;">
