@@ -93,7 +93,7 @@ class TestBaseView(DetailView):
     def get(self, request, *args, **kwargs):
         test_id = kwargs['pk']
         test = models.Test.objects.all().filter(id=test_id).first()
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and test.logged:
             if models.Result.objects.filter(user=request.user, test=test_id).first() is None:
                 result = models.Result(user=request.user, test=test)
                 result.save()
